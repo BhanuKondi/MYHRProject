@@ -1,0 +1,118 @@
+employees
+
+
+SELECT * FROM hr_application.leaves;CREATE TABLE `employees` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `emp_code` varchar(50) NOT NULL,
+  `user_id` int DEFAULT NULL,
+  `first_name` varchar(100) NOT NULL,
+  `last_name` varchar(100) NOT NULL,
+  `work_email` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `address` text,
+  `date_of_joining` date NOT NULL,
+  `manager_emp_id` int DEFAULT NULL,
+  `status` varchar(50) NOT NULL DEFAULT 'Active',
+  `department` varchar(100) DEFAULT NULL,
+  `job_title` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `emp_code` (`emp_code`),
+  UNIQUE KEY `work_email` (`work_email`),
+  KEY `user_id` (`user_id`),
+  KEY `idx_employees_manager` (`manager_emp_id`),
+  KEY `idx_employees_status` (`status`),
+  CONSTRAINT `employees_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `employees_ibfk_2` FOREIGN KEY (`manager_emp_id`) REFERENCES `employees` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-------------------
+
+leave_summary
+
+CREATE TABLE `leave_summary` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `emp_code` varchar(50) DEFAULT NULL,
+  `total_leaves` int DEFAULT '24',
+  `consumed` int DEFAULT '0',
+  `pending` int DEFAULT '24',
+  PRIMARY KEY (`id`),
+  KEY `emp_code` (`emp_code`),
+  CONSTRAINT `leave_summary_ibfk_1` FOREIGN KEY (`emp_code`) REFERENCES `employees` (`emp_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-------------------------------
+
+holidays
+
+CREATE TABLE `holidays` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `day` varchar(20) DEFAULT NULL,
+  `occasion` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-------------------------
+
+leave_types
+
+CREATE TABLE `leave_types` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` text,
+  `default_days_per_year` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--------------------
+
+leaves
+CREATE TABLE `leaves` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `emp_code` varchar(50) DEFAULT NULL,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `total_days` int DEFAULT NULL,
+  `reason` text,
+  `status` varchar(20) DEFAULT 'Pending',
+  `decision_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `emp_code` (`emp_code`),
+  CONSTRAINT `leaves_ibfk_1` FOREIGN KEY (`emp_code`) REFERENCES `employees` (`emp_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+---------------------
+
+roles
+
+CREATE TABLE `roles` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+----------------------------
+
+users`
+
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `display_name` varchar(255) DEFAULT NULL,
+  `role_id` int NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `must_change_password` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_login_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  KEY `role_id` (`role_id`),
+  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
