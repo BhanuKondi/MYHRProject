@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from models.models import Employee, User
+from models.models import Holiday, Leave, LeaveSummary
+from datetime import datetime
 from models.db import db
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -131,3 +133,15 @@ def edit_employee(id):
     db.session.commit()
     flash("Employee updated successfully.", "success")
     return redirect(url_for("admin.employees"))
+@admin_bp.route("/leaves")
+def leaves_home():
+    holidays = Holiday.query.order_by(Holiday.date).all()
+    pending = Leave.query.filter_by(status="Pending").all()
+    summaries = LeaveSummary.query.all()
+
+    return render_template(
+        "admin/leaves.html",
+        holidays=holidays,
+        pending=pending,
+        summaries=summaries
+    )

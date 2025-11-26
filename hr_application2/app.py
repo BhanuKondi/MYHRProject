@@ -1,5 +1,8 @@
 from flask import Flask, redirect, session
 from werkzeug.security import generate_password_hash
+from datetime import date, datetime
+from models.db import db
+from models.models import Role, User, Employee
 
 # ----------------- APP SETUP -----------------
 app = Flask(__name__, instance_relative_config=True)
@@ -46,6 +49,59 @@ def create_default_admin():
             print("✔ Default admin created (admin@example.com / admin123)")
 
 create_default_admin()
+def create_default_employee():
+    with app.app_context():
+        db.create_all()
+
+        # Ensure Employee role exists
+        employee_role = Role.query.filter_by(name="Employee").first()
+        if not employee_role:
+            employee_role = Role(name="Employee")
+            db.session.add(employee_role)
+            db.session.commit()
+
+        # Default employee account
+        emp_email = "employee@example.com"
+        employee_user = User.query.filter_by(email=emp_email).first()
+
+        if not employee_user:
+            employee_user = User(
+                email=emp_email,
+                display_name="Default Employee",
+                role_id=employee_role.id,
+                is_active=True,
+                must_change_password=False
+            )
+            employee_user.set_password("emp123")
+            db.session.add(employee_user)
+            db.session.commit()
+            print("✔ Default employee USER created")
+
+        # Create employee profile
+        emp_profile = Employee.query.filter_by(user_id=employee_user.id).first()
+
+        if not emp_profile:
+            emp_profile = Employee(
+                emp_code="EMP005",                # must not be null
+                user_id=employee_user.id,
+                first_name="Default",
+                last_name="Employee",
+                work_email=emp_email,
+                phone="9999999999",
+                address="Hyderabad, India",
+                date_of_joining=date.today(),     # required
+                manager_emp_id=None,              # no manager
+                status="Active",
+                department="General",
+                job_title="Staff",
+                created_at=datetime.now(),
+                updated_at=datetime.now()
+            )
+
+            db.session.add(emp_profile)
+            db.session.commit()
+            print("✔ Default EMPLOYEE PROFILE created with all columns populated")
+create_default_employee()
 
 # ----------------- BLUEPRINTS -----------------
 from auth.auth import auth_bp
@@ -65,15 +121,12 @@ def index():
     role_id = session.get("role_id")
 
     if not user_id:
-        # Not logged in, go to login page
         return redirect("/login")
     else:
-        # Logged in, redirect based on role
         if role_id == 1:  # Admin
             return redirect("/admin/dashboard")
         else:  # Employee
             return redirect("/employee/dashboard")
-
 # ----------------- RUN -----------------
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,9 +1,10 @@
-{% extends "admin/admin_base.html" %}
+{% extends "employee/employee_base.html" %}
+{% block title %}Employee Dashboard{% endblock %}
+
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Employee Dashboard</h2>
-    <p>Welcome, {{ session.get('email') }}!</p>
-    <p>This is your dashboard. More features will come soon!</p>
-</div>
+<h2>Welcome, Employee!</h2>
+<p>This is the Employee dashboard.</p>
+
+
 {% endblock %}
