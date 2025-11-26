@@ -22,11 +22,14 @@ def dashboard():
 
     return render_template("employee/dashboard.html", employee=employee)
 # ---------------- LEAVE MANAGEMENT HOME ----------------
-@employee_bp.route("/leave-management")
+@employee_bp.route('/leave-management', methods=['GET', 'POST'])
 def leave_management():
-    return render_template("employee/leave_management.html")
+    user_id = session["user_id"]
+    employee = Employee.query.filter_by(user_id=user_id).first()
 
-
+    holidays = Holiday.query.all()
+    leaves =  Leave.query.filter_by(emp_code=employee.emp_code).all()
+    return render_template('employee/leave_management.html', holidays=holidays, leaves=leaves,employee=employee)
 # ---------------- HOLIDAYS PAGE ----------------
 @employee_bp.route("/holidays")
 def holidays():

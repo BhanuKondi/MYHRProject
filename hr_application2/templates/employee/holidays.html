@@ -8,7 +8,7 @@
     <table class="table table-striped mt-4">
         <thead>
             <tr>
-                <th>#</th>
+                <th>S.No</th>
                 <th>Holiday</th>
                 <th>Date</th>
             </tr>
@@ -17,7 +17,7 @@
             {% for h in holidays %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ h.name }}</td>
+                <td>{{ h.occasion }}</td>
                 <td>{{ h.date }}</td>
             </tr>
             {% endfor %}

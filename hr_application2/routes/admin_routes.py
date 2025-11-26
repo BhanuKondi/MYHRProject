@@ -3,6 +3,7 @@ from models.models import Employee, User
 from models.models import Holiday, Leave, LeaveSummary
 from datetime import datetime
 from models.db import db
+from flask import request, jsonify
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -137,7 +138,25 @@ def edit_employee(id):
 def leaves_home():
     holidays = Holiday.query.order_by(Holiday.date).all()
     pending = Leave.query.filter_by(status="Pending").all()
-    summaries = LeaveSummary.query.all()
+
+    # ----- Build Leave Summary for ALL Employees -----
+    employees = Employee.query.all()
+    summaries = []
+
+    for emp in employees:
+        # Get all approved leaves for this employee
+        approved_leaves = Leave.query.filter_by(emp_code=emp.emp_code, status="Approved").all()
+
+        consumed = sum(l.total_days for l in approved_leaves)
+        total_leaves = 24
+        remaining = total_leaves - consumed
+
+        summaries.append({
+            "employee": emp,
+            "total": total_leaves,
+            "consumed": consumed,
+            "remaining": remaining
+        })
 
     return render_template(
         "admin/leaves.html",
@@ -145,3 +164,17 @@ def leaves_home():
         pending=pending,
         summaries=summaries
     )
+
+
+@admin_bp.route('/update-leave-status/<int:leave_id>', methods=['POST'])
+def update_leave_status(leave_id):
+    leave = Leave.query.get_or_404(leave_id)
+    new_status = request.form.get('status')
+    if new_status not in ['Approved', 'Rejected']:
+        flash('Invalid status', 'danger')
+        return redirect(url_for('admin.leaves_home'))
+
+    leave.status = new_status
+    db.session.commit()
+    flash(f'Leave {new_status} successfully.', 'success')
+    return redirect(url_for('admin.leaves_home'))

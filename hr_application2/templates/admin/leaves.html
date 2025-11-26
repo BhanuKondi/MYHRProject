@@ -45,33 +45,41 @@
     <h3>Pending Leave Approvals</h3>
 
     <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Employee</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Total Days</th>
-                <th>Reason</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for p in pending %}
-            <tr>
-                <td>{{ p.employee.first_name }} {{ p.employee.last_name }}</td>
-                <td>{{ p.start_date }}</td>
-                <td>{{ p.end_date }}</td>
-                <td>{{ p.total_days }}</td>
-                <td>{{ p.reason }}</td>
-                <td>{{ p.status }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" class="text-center text-muted">No pending requests</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <thead>
+    <tr>
+      <th>Employee</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Total Days</th>
+      <th>Reason</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in pending %}
+    <tr>
+      <td>{{ p.employee.first_name }} {{ p.employee.last_name }}</td>
+      <td>{{ p.start_date }}</td>
+      <td>{{ p.end_date }}</td>
+      <td>{{ p.total_days }}</td>
+      <td>{{ p.reason }}</td>
+      <td>{{ p.status }}</td>
+      <td>
+        {% if p.status == 'Pending' %}
+        <form method="POST" action="{{ url_for('admin.update_leave_status', leave_id=p.id) }}">
+         
+          <button type="submit" name="status" value="Approved" class="btn btn-success btn-sm">Approve</button>
+          <button type="submit" name="status" value="Rejected" class="btn btn-danger btn-sm">Reject</button>
+        </form>
+        {% else %}
+        <span class="text-muted">No Action</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 </div>
 
 <!-- ========================= SUMMARY TAB ========================= -->
@@ -83,26 +91,23 @@
             <tr>
                 <th>Employee</th>
                 <th>Total Leaves</th>
-                <th>Consumed</th>
-                <th>Pending Balance</th>
+                <th>Consumed (Approved)</th>
+                <th>Remaining</th>
             </tr>
         </thead>
         <tbody>
             {% for s in summaries %}
             <tr>
                 <td>{{ s.employee.first_name }} {{ s.employee.last_name }}</td>
-                <td>{{ s.total_leaves }}</td>
+                <td>{{ s.total }}</td>
                 <td>{{ s.consumed }}</td>
-                <td>{{ s.pending }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" class="text-center text-muted">No employee leave data</td>
+                <td>{{ s.remaining }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
 
 <!-- ========================= TAB SWITCH SCRIPT ========================= -->
 <script>

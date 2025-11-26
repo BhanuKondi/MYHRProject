@@ -8,7 +8,7 @@
     <table class="table table-bordered mt-4">
         <thead>
             <tr>
-                <th>#</th>
+                <th>S.No</th>
                 <th>Start</th>
                 <th>End</th>
                 <th>Days</th>
@@ -17,7 +17,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for req in leave_requests %}
+            {% for req in leaves %}
             <tr>
                 <td>{{ loop.index }}</td>
                 <td>{{ req.start_date }}</td>
