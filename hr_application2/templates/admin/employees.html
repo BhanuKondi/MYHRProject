@@ -45,18 +45,18 @@
             <td>
 
                 <button class="btn btn-sm btn-info text-white"
-                        data-bs-toggle="modal"
-                        data-bs-target="#viewEmployeeModal"
-                        onclick="loadEmployee({{ emp.id }})">
-                    View
-                </button>
+        data-bs-toggle="modal"
+        data-bs-target="#viewEmployeeModal"
+        onclick="loadEmployee('{{ emp.id }}')">
+    View
+</button>
 
-                <button class="btn btn-sm btn-warning"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editEmployeeModal"
-                        onclick="loadEmployeeEdit({{ emp.id }})">
-                    Edit
-                </button>
+<button class="btn btn-sm btn-warning"
+        data-bs-toggle="modal"
+        data-bs-target="#editEmployeeModal"
+        onclick="loadEmployeeEdit('{{ emp.id }}')">
+    Edit
+</button>
 
                 <form action="/admin/employees/delete/{{ emp.id }}" method="POST"
                       style="display:inline-block;">

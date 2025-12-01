@@ -1,0 +1,123 @@
+{% extends "manager/manager_base.html" %}
+{% block title %}Leave Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Leave Management</h2>
+
+    <!-- TAB BUTTONS -->
+    <div class="d-flex gap-2 flex-wrap mt-3 mb-4">
+        <button class="btn btn-success" onclick="showTab('holidays')">Holidays</button>
+        <button class="btn btn-primary" onclick="showTab('request-leave')">Request Leave</button>
+        <button class="btn btn-info" onclick="showTab('my-leaves')">My Leave Requests</button>
+    </div>
+
+    <!-- ========================= HOLIDAYS TAB ========================= -->
+    <div id="holidays" class="tab-content" style="display:none;">
+        <h3>Company Holidays</h3>
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Holiday</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in holidays %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ h.occasion }}</td>
+                    <td>{{ h.date }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No holidays added</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ========================= REQUEST LEAVE TAB ========================= -->
+    <div id="request-leave" class="tab-content" style="display:none;">
+        <h3>Request Leave</h3>
+        <form method="POST" action="{{ url_for('manager.request_leave') }}" class="mt-3">
+            <div class="mb-3">
+            <label class="form-label">Employee Code</label>
+            <input type="text" name="emp_code" class="form-control" value="{{ employee.emp_code }}" readonly>
+        </div>
+            <div class="mb-3">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" required>
+            </div>
+            <div class="mb-3">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" required>
+            </div>
+            <div class="mb-3">
+                <label for="reason" class="form-label">Reason</label>
+                <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Leave Request</button>
+        </form>
+    </div>
+
+    <!-- ========================= MY LEAVE REQUESTS TAB ========================= -->
+    <div id="my-leaves" class="tab-content" style="display:none;">
+        <h3>My Leave Requests</h3>
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Days</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in leaves %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ req.start_date }}</td>
+                    <td>{{ req.end_date }}</td>
+                    <td>{{ req.total_days }}</td>
+                    <td>{{ req.reason }}</td>
+                    <td>
+                        {% if req.status == 'Pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif req.status == 'Approved' %}
+                            <span class="badge bg-success">Approved</span>
+                        {% else %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No leave requests found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ========================= TAB SWITCH SCRIPT ========================= -->
+<script>
+function showTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(function(section) {
+        section.style.display = "none";
+    });
+    document.getElementById(tabId).style.display = "block";
+}
+
+// Show Holidays tab by default
+window.onload = function() {
+    showTab('holidays');
+};
+</script>
+
+{% endblock %}

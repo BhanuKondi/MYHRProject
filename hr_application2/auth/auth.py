@@ -28,6 +28,8 @@ def login():
         # Role-based redirect
         if user.role.name.lower() == "admin":
             return redirect("/admin/dashboard")
+        elif user.role.name.lower() == "manager":
+            return redirect("manager/dashboard")
         else:
             return redirect("/employee/dashboard")  # create employee dashboard later
 

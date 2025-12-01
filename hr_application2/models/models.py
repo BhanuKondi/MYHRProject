@@ -82,3 +82,4 @@ class LeaveSummary(db.Model):
 
     employee = db.relationship("Employee", backref="leave_summary", lazy=True)
 
+from models.attendance import Attendance

@@ -1,0 +1,394 @@
+{% extends "admin/admin_base.html" %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary">
+      <i class="bi bi-clipboard-check"></i> Attendance Dashboard
+    </h2>
+
+    <span id="liveClock" class="fs-5 fw-semibold badge bg-dark px-3 py-2"></span>
+  </div>
+
+  <!-- ============================
+       TODAY'S ATTENDANCE
+  =============================== -->
+  <div class="card shadow-sm mb-4 border-0">
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+      <strong><i class="bi bi-calendar-day"></i> Today's Attendance</strong>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0" id="todayTable">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Total Worked</th>
+              <th>Status</th>
+              <th>View</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       HISTORY TABLE
+  =============================== -->
+  <div class="card shadow-sm border-0" >
+    <div class="card-header bg-primary text-white d-flex justify-content-between">
+      <strong><i class="bi bi-clock-history"></i> Previous Records</strong>
+
+      <div class="d-flex gap-2">
+        <input type="date" id="historyStart" class="form-control form-control-sm" />
+        <input type="date" id="historyEnd" class="form-control form-control-sm" />
+
+        <button class="btn btn-sm btn-light fw-bold" onclick="loadHistory()">
+          <i class="bi bi-filter"></i> Filter
+        </button>
+
+        <button class="btn btn-sm btn-dark fw-bold" onclick="resetHistoryFilter()">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0" id="historyTable">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Name</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Worked</th>
+              <th>Status</th>
+              <th>View</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ============================
+      VIEW MODAL
+=============================== -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content shadow-lg border-0">
+
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-person-badge"></i> <span id="modalTitle"></span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div id="modalTopSummary" class="alert alert-info p-2 mb-3"></div>
+
+        <!-- TABS -->
+        <ul class="nav nav-tabs" id="viewTabs" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link active fw-bold" id="transactions-tab"
+              data-bs-toggle="tab" data-bs-target="#transactions">
+              <i class="bi bi-shuffle"></i> Transactions
+            </button>
+          </li>
+
+          <li class="nav-item">
+            <button class="nav-link fw-bold" id="monthly-tab"
+              data-bs-toggle="tab" data-bs-target="#monthly">
+              <i class="bi bi-calendar-month"></i> Monthly Summary
+            </button>
+          </li>
+
+          <li class="nav-item">
+            <button class="nav-link fw-bold" id="lastrecord-tab"
+              data-bs-toggle="tab" data-bs-target="#lastrecord">
+              <i class="bi bi-file-earmark-check"></i> Last Record
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content mt-3">
+
+          <!-- TRANSACTION TAB -->
+          <div class="tab-pane fade show active" id="transactions">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <label class="fw-bold me-2">Date:</label>
+                <input type="date" id="txnDate" class="form-control form-control-sm d-inline-block w-auto" />
+              </div>
+              <button class="btn btn-primary btn-sm fw-bold" id="refreshTxnBtn">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover text-center" id="txnTable">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Clock In</th>
+                    <th>Clock Out</th>
+                    <th>Duration</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- MONTHLY TAB -->
+          <div class="tab-pane fade" id="monthly">
+            <div class="mb-3">
+              <label class="fw-bold me-2">Choose Month:</label>
+              <input type="month" id="monthSelect" class="form-control form-control-sm d-inline-block w-auto" />
+              <button class="btn btn-primary btn-sm fw-bold ms-2" id="loadMonthBtn">
+                <i class="bi bi-search"></i> Load
+              </button>
+            </div>
+            <div id="monthlySummary"></div>
+          </div>
+
+          <!-- LAST RECORD TAB -->
+          <div class="tab-pane fade" id="lastrecord">
+            <div id="lastRecordBlock" class="p-3 border rounded bg-light"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+<style>
+  /* BEAUTIFUL TABLE EFFECTS */
+  table.table tbody tr:hover {
+    background-color: #1075d9;
+    transition: 0.2s;
+  }
+
+  .card {
+    border-radius: 10px;
+  }
+
+  #monthlySummary .stat-box {
+    border-radius: 8px;
+    padding: 15px;
+    color: white;
+  }
+</style>
+
+
+<!-- ============================
+      JAVASCRIPT SAME AS BEFORE
+=============================== -->
+<script>
+const IST_OFFSET = "+05:30"; // for display only; backend is authoritative for times
+
+// Live clock (IST)
+function startClock() {
+  function update() {
+    const now = new Date();
+    // convert local to IST display: easier is to show server times; here just show local with label
+    // show in format: YYYY-MM-DD HH:MM:SS IST
+    const iso = new Date().toLocaleString('en-GB', { hour12: false });
+    document.getElementById('liveClock').innerText = iso + " IST";
+  }
+  update();
+  setInterval(update, 1000);
+}
+
+// Helpers
+function createCell(text) {
+  const td = document.createElement('td');
+  td.innerText = text ?? '-';
+  return td;
+}
+
+async function loadToday() {
+  const res = await fetch("/admin/attendance/list_today");
+  const data = await res.json();
+  const tbody = document.querySelector("#todayTable tbody");
+  tbody.innerHTML = "";
+
+  data.forEach(row => {
+    const tr = document.createElement("tr");
+    tr.appendChild(createCell(row.name));
+    tr.appendChild(createCell(row.clock_in));
+    tr.appendChild(createCell(row.clock_out));
+    tr.appendChild(createCell(row.worked));
+    tr.appendChild(createCell(row.status));
+    const btnTd = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.className = "btn btn-sm btn-primary";
+    btn.innerText = "View";
+    btn.onclick = () => openViewModal(row.user_id, row.date); // default date = today
+    btnTd.appendChild(btn);
+    tr.appendChild(btnTd);
+    tbody.appendChild(tr);
+  });
+}
+
+// History load (last 30 days or filtered)
+async function loadHistory() {
+  const s = document.getElementById('historyStart').value;
+  const e = document.getElementById('historyEnd').value;
+  let url = "/admin/attendance/list_history";
+  if (s || e) {
+    url += '?';
+    if (s) url += 'start_date=' + s;
+    if (s && e) url += '&';
+    if (e) url += 'end_date=' + e;
+  }
+  const res = await fetch(url);
+  const data = await res.json();
+  const tbody = document.querySelector("#historyTable tbody");
+  tbody.innerHTML = "";
+  data.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.appendChild(createCell(row.date));
+    tr.appendChild(createCell(row.name));
+    tr.appendChild(createCell(row.clock_in));
+    tr.appendChild(createCell(row.clock_out));
+    tr.appendChild(createCell(row.worked));
+    tr.appendChild(createCell(row.status));
+    const vtd = document.createElement('td');
+    const vb = document.createElement('button');
+    vb.className = "btn btn-sm btn-primary";
+    vb.innerText = "View";
+    vb.onclick = () => openViewModal(row.user_id, row.date);
+    vtd.appendChild(vb);
+    tr.appendChild(vtd);
+    tbody.appendChild(tr);
+  });
+}
+
+function resetHistoryFilter() {
+  document.getElementById('historyStart').value = '';
+  document.getElementById('historyEnd').value = '';
+  loadHistory();
+}
+
+// Modal open + load transactions + monthly summary
+let currentModalUserId = null;
+
+function openViewModal(userId, dateStr=null) {
+  currentModalUserId = userId;
+  // set title
+  document.getElementById('modalTitle').innerText = "Attendance Details - User #" + userId;
+  // set txn date default to dateStr or today
+  const txnDateInput = document.getElementById('txnDate');
+  txnDateInput.value = dateStr || new Date().toISOString().slice(0,10);
+
+  // default month select to current month
+  const mSel = document.getElementById('monthSelect');
+  const today = new Date();
+  mSel.value = today.toISOString().slice(0,7);
+
+  // load transactions & last record
+  loadTransactions();
+  // show modal
+  const modalEl = document.getElementById('viewModal');
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+}
+
+document.getElementById('refreshTxnBtn')?.addEventListener('click', loadTransactions);
+document.getElementById('loadMonthBtn')?.addEventListener('click', loadMonthly);
+
+async function loadTransactions() {
+  if (!currentModalUserId) return;
+  const dateVal = document.getElementById('txnDate').value;
+  const url = `/admin/attendance/transactions/${currentModalUserId}` + (dateVal ? `?date=${dateVal}` : '');
+  const res = await fetch(url);
+  const json = await res.json();
+
+  // fill transactions table
+  const tbody = document.querySelector("#txnTable tbody");
+  tbody.innerHTML = "";
+  json.transactions.forEach((tx, i) => {
+    const tr = document.createElement('tr');
+    tr.appendChild(createCell(tx.transaction_no));
+    tr.appendChild(createCell(tx.clock_in));
+    tr.appendChild(createCell(tx.clock_out));
+    tr.appendChild(createCell(tx.duration));
+    tbody.appendChild(tr);
+  });
+
+  // top summary & last record
+  const top = document.getElementById('modalTopSummary');
+  const lastRec = json.last_record;
+  top.innerHTML = `
+    <div><strong>Date:</strong> ${json.date}</div>
+  `;
+  const lastBlock = document.getElementById('lastRecordBlock');
+  if (lastRec) {
+    lastBlock.innerHTML = `
+      <div class="border p-2">
+        <div><strong>Last Record</strong></div>
+        <div>Clock In: ${lastRec.clock_in}</div>
+        <div>Clock Out: ${lastRec.clock_out}</div>
+        <div>Worked: ${lastRec.worked}</div>
+        <div>Status: ${lastRec.status}</div>
+      </div>
+    `;
+  } else {
+    lastBlock.innerHTML = `<div class="text-muted">No records for this date</div>`;
+  }
+}
+
+async function loadMonthly() {
+  if (!currentModalUserId) return;
+  const monthVal = document.getElementById('monthSelect').value; // YYYY-MM
+  if (!monthVal) return alert("Please select month");
+  const [y, m] = monthVal.split('-');
+  const url = `/admin/attendance/monthly/${currentModalUserId}/${y}/${m}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  const ms = document.getElementById('monthlySummary');
+  if (json.error) {
+    ms.innerHTML = `<div class="text-danger">${json.error}</div>`;
+    return;
+  }
+  ms.innerHTML = `
+    <div class="border p-3">
+      <div><strong>Month:</strong> ${json.year}-${String(json.month).padStart(2,'0')}</div>
+      <div><strong>Days in Month:</strong> ${json.days_in_month}</div>
+      <div><strong>Present Days:</strong> ${json.present_days}</div>
+      <div><strong>Absent Days:</strong> ${json.absent_days}</div>
+      <div><strong>Total Worked:</strong> ${json.total_worked}</div>
+      <div><strong>Average Daily:</strong> ${json.avg_daily}</div>
+      <div><strong>Late Days:</strong> ${json.late_days}</div>
+      <div><strong>Early Leaves:</strong> ${json.early_leaves}</div>
+    </div>
+  `;
+}
+
+// init
+startClock();
+loadToday();
+loadHistory();
+
+// Optional: refresh today every 30s to see live changes
+setInterval(loadToday, 30000);
+</script>
+{% endblock %}

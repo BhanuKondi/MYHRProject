@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>Manager Panel</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -14,8 +15,8 @@
     <a class="navbar-brand fw-bold text-white" href="#">ATIKES HR Management</a>
 
     <div class="ms-auto dropdown">
-        <a class="btn btn-outline-light dropdown-toggle" href="#" role="button" id="settingsDropdown"
-           data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="btn btn-outline-light dropdown-toggle" href="#" role="button"
+           id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             {{ session.email }}
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
@@ -27,38 +28,47 @@
 </nav>
 
 <div class="d-flex">
+
     <!-- SIDEBAR -->
     <div class="bg-light sidebar p-3" style="width: 260px; min-height: 100vh;">
         <ul class="nav flex-column">
+
             <li class="nav-item">
-                <a href="{{ url_for('admin.dashboard') }}" class="nav-link sidebar-item {% if request.path == '/admin/dashboard' %}active{% endif %}">
-                    Dashboard
+                <a href="{{ url_for('manager.dashboard') }}" 
+                   class="nav-link sidebar-item {% if '/manager/dashboard' in request.path %}active{% endif %}">
+                   Dashboard
                 </a>
             </li>
+
             <li class="nav-item">
-                <a href="{{ url_for('admin.employees') }}" class="nav-link sidebar-item {% if request.path == '/admin/employees' %}active{% endif %}">
-                    Employees
+                <a href="{{ url_for('manager.profile') }}"
+                   class="nav-link sidebar-item {% if '/manager/profile' in request.path %}active{% endif %}">
+                   Profile
                 </a>
             </li>
-           <li class="nav-item">
-                <a href="{{ url_for('admin_attendance_bp.attendance_page') }}"
-                   class="nav-link sidebar-item {% if '/admin/attendance' in request.path %}active{% endif %}">
-                    Attendance
-                </a>
-            </li>
+
             <li class="nav-item">
-                <a href="{{ url_for('admin.leaves_home') }}"
-                   class="nav-link sidebar-item {% if request.path.startswith('/admin/leaves') %}active{% endif %}">
-                    Leave Management
+                <a href="{{ url_for('manager_attendance_bp.attendance_page') }}"
+                   class="nav-link sidebar-item {% if '/manager/attendance' in request.path %}active{% endif %}">
+                   Attendance
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a href="{{ url_for('manager.leave_management') }}"
+                   class="nav-link sidebar-item {% if '/manager/leave_management' in request.path %}active{% endif %}">
+                   Leave Management
+                </a>
+            </li>
+
         </ul>
     </div>
 
-    <!-- PAGE CONTENT -->
+    <!-- MAIN CONTENT -->
     <div class="p-4" style="width: 100%;">
         {% block content %}{% endblock %}
     </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

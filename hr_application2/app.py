@@ -105,14 +105,20 @@ create_default_employee()
 
 # ----------------- BLUEPRINTS -----------------
 from auth.auth import auth_bp
-from routes.admin_routes import admin_bp
+from routes.admin_routes import admin_bp,admin_attendance_bp,attendance_bp
 from routes.settings import settings_bp
-from routes.employee_routes import employee_bp
+from routes.employee_routes import employee_bp,employee_attendance_bp
+from routes.manager_routes import manager_bp,manager_attendance_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(employee_bp)
+app.register_blueprint(admin_attendance_bp)
+app.register_blueprint(attendance_bp)
+app.register_blueprint(employee_attendance_bp)
+app.register_blueprint(manager_bp)
+app.register_blueprint(manager_attendance_bp)
 
 # ----------------- ROOT REDIRECT -----------------
 @app.route("/")
@@ -122,11 +128,20 @@ def index():
 
     if not user_id:
         return redirect("/login")
+
+    # Fetch role name safely
+    try:
+        role = Role.query.get(role_id)
+        role_name = role.name.lower() if role and role.name else ""
+    except Exception:
+        role_name = ""
+
+    if role_name == "admin":
+        return redirect("/admin/dashboard")
+    elif role_name == "manager":
+        return redirect("/manager/dashboard")
     else:
-        if role_id == 1:  # Admin
-            return redirect("/admin/dashboard")
-        else:  # Employee
-            return redirect("/employee/dashboard")
+        return redirect("/employee/dashboard")
 # ----------------- RUN -----------------
 if __name__ == "__main__":
     app.run(debug=True)

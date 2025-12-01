@@ -27,6 +27,8 @@ def change_password():
         # Redirect based on role
         if user.role.name.lower() == "admin":
             return redirect(url_for("admin.dashboard"))
+        elif user.role.name.lower()=="manager":
+            return redirect(url_for("manager.dashboard"))
         else:
             return redirect("/employee/dashboard")
 
