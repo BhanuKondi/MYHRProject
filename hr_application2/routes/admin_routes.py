@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from models.models import Employee, User
-from models.models import Holiday, Leave, LeaveSummary
+from models.models import Holiday, Leave, LeaveSummary,LeaveApprovalConfig, User
 from datetime import datetime
 from models.db import db
 from flask import request, jsonify
@@ -549,3 +549,30 @@ def today_summary():
         "total_seconds": total_seconds,
         "transactions": transactions,
     })
+
+@admin_bp.route("/configure-approvals", methods=["GET", "POST"])
+def configure_approvals():
+    if session.get('role_id') != 1:
+        return "Access denied", 403
+
+    users = User.query.all()
+
+    config = LeaveApprovalConfig.query.first()
+    if not config:
+        config = LeaveApprovalConfig()
+        db.session.add(config)
+        db.session.commit()
+
+    if request.method == "POST":
+        config.level1_approver_id = request.form.get("level1")
+        config.level2_approver_id = request.form.get("level2")
+        db.session.commit()
+
+        flash("Approval workflow updated successfully!", "success")
+        return redirect(url_for("admin.configure_approvals"))
+
+    return render_template(
+        "admin/configure_approvals.html",
+        users=users,
+        config=config
+    )

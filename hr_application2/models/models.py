@@ -81,5 +81,29 @@ class LeaveSummary(db.Model):
     pending = db.Column(db.Integer, default=24)
 
     employee = db.relationship("Employee", backref="leave_summary", lazy=True)
+class LeaveApprovalConfig(db.Model):
+    __tablename__ = 'leave_approval_config'
+
+    id = db.Column(db.Integer, primary_key=True)
+    level1_approver_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    level2_approver_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    level1_approver = db.relationship("User", foreign_keys=[level1_approver_id])
+    level2_approver = db.relationship("User", foreign_keys=[level2_approver_id])
+class Leavee(db.Model):
+    __tablename__ = 'employee_leaves'
+    id = db.Column(db.Integer, primary_key=True)
+    emp_code = db.Column(db.String(20), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    total_days = db.Column(db.Integer, nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+
+    status = db.Column(db.String(20), default="PENDING_L1")  # PENDING_L1, REJECTED_L1, PENDING_L2, APPROVED
+    level1_approver_id = db.Column(db.Integer, nullable=True)
+    level2_approver_id = db.Column(db.Integer, nullable=True)
+    current_approver_id = db.Column(db.Integer, nullable=True)      # <-- NEW
+    level1_decision_date = db.Column(db.DateTime, nullable=True)
+    level2_decision_date = db.Column(db.DateTime, nullable=True)
 
 from models.attendance import Attendance

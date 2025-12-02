@@ -109,7 +109,8 @@ from routes.admin_routes import admin_bp,admin_attendance_bp,attendance_bp
 from routes.settings import settings_bp
 from routes.employee_routes import employee_bp,employee_attendance_bp
 from routes.manager_routes import manager_bp,manager_attendance_bp
-
+from routes.employee_leaves import employee_lbp
+from routes.admin_leaves import admin_lbp
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(settings_bp)
@@ -119,6 +120,8 @@ app.register_blueprint(attendance_bp)
 app.register_blueprint(employee_attendance_bp)
 app.register_blueprint(manager_bp)
 app.register_blueprint(manager_attendance_bp)
+app.register_blueprint(employee_lbp)
+app.register_blueprint(admin_lbp)
 
 # ----------------- ROOT REDIRECT -----------------
 @app.route("/")
