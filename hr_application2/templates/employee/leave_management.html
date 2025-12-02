@@ -131,6 +131,11 @@ function showTab(tabId) {
     if (tabId === "requests") loadRequests();
 }
 
+// 🔥 Disable past dates
+let today = new Date().toISOString().split("T")[0];
+document.querySelector("input[name='start_date']").setAttribute("min", today);
+document.querySelector("input[name='end_date']").setAttribute("min", today);
+
 // Load pending approvals
 function loadApprovals() {
     fetch("{{ url_for('employee_leaves.my_approvals') }}")
@@ -169,6 +174,7 @@ function approve(id) {
         .then(() => loadApprovals());
 }
 
+// Reject leave
 function reject(id) {
     fetch(`/employee/leaves/leave/reject/${id}`, { method: "POST" })
         .then(res => res.json())
@@ -187,39 +193,29 @@ function loadRequests() {
                 data.sort((a, b) => new Date(b.start) - new Date(a.start));
 
                 data.forEach((l, i) => {
-                    let bgColor = "#f0f0f0"; // default gray
+                    let bgColor = "#f0f0f0";
                     let displayStatus = l.status;
 
                     switch(l.status) {
                         case "PENDING_L1":
-                            displayStatus = "Pending L1";
-                            bgColor = "#f0f0f0";
-                            break;
+                            displayStatus = "Pending L1"; break;
                         case "PENDING_L2":
-                            displayStatus = "Pending L2";
-                            bgColor = "#f0f0f0";
-                            break;
+                            displayStatus = "Pending L2"; break;
                         case "APPROVED":
-                            displayStatus = "Approved";
-                            bgColor = "#d4edda"; // green
-                            break;
+                            displayStatus = "Approved"; bgColor = "#d4edda"; break;
                         case "REJECTED_L1":
-                            displayStatus = "Rejected L1";
-                            bgColor = "#f8d7da"; // red
-                            break;
+                            displayStatus = "Rejected L1"; bgColor = "#f8d7da"; break;
                         case "REJECTED_L2":
-                            displayStatus = "Rejected L2";
-                            bgColor = "#f8d7da"; // red
-                            break;
+                            displayStatus = "Rejected L2"; bgColor = "#f8d7da"; break;
                     }
 
                     html += `
                     <tr>
-                        <td style="background-color: ${bgColor};">${i + 1}</td>
-                        <td style="background-color: ${bgColor};">${l.start} → ${l.end}</td>
-                        <td style="background-color: ${bgColor};">${l.days}</td>
-                        <td style="background-color: ${bgColor};">${l.reason}</td>
-                        <td style="background-color: ${bgColor}; font-weight:bold;">${displayStatus}</td>
+                        <td style="background-color:${bgColor};">${i + 1}</td>
+                        <td style="background-color:${bgColor};">${l.start} → ${l.end}</td>
+                        <td style="background-color:${bgColor};">${l.days}</td>
+                        <td style="background-color:${bgColor};">${l.reason}</td>
+                        <td style="background-color:${bgColor}; font-weight:bold;">${displayStatus}</td>
                     </tr>`;
                 });
             }
@@ -227,7 +223,7 @@ function loadRequests() {
         });
 }
 
-// Show Holidays tab by default
+// Default tab
 window.onload = function () {
     showTab('holidays');
 }

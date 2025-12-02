@@ -66,7 +66,7 @@ def submit_leave():
     db.session.commit()
 
     flash("Leave request submitted!", "success")
-    return redirect(url_for("employee.leave_management"))
+    return redirect(url_for("employee_leaves.leave_management"))
 
 @employee_lbp.route("/leave/my-requests")
 def my_requests():
@@ -88,10 +88,37 @@ def my_requests():
 def my_approvals():
     emp = current_employee()
 
-    pending = Leavee.query.filter_by(current_approver_id=emp.user_id).all()
+    # Fetch approval config
+    config = LeaveApprovalConfig.query.first()
+    level1 = config.level1_approver_id
+    level2 = config.level2_approver_id
 
-    return jsonify([
-        {
+    all_pending = Leavee.query.filter_by(current_approver_id=emp.user_id).all()
+
+    final_list = []
+
+    for l in all_pending:
+
+        # --------------------------
+        # RULE: SKIP SELF-APPROVAL
+        # If employee is Level-1 approver AND leave belongs to him → skip
+        # --------------------------
+        if emp.user_id == level1 and l.emp_code == emp.emp_code:
+            # Auto-route to Level2 instead of showing in L1 approvals
+            l.current_approver_id = level2
+            l.status = "PENDING_L2"
+            db.session.commit()
+            continue  # do NOT show in the list
+
+        # If employee is Level2 approver AND request belongs to him → auto approve
+        if emp.user_id == level2 and l.emp_code == emp.emp_code:
+            l.status = "APPROVED"
+            l.current_approver_id = None
+            db.session.commit()
+            continue  # do NOT show in approvals
+
+        # Normal case → show in list
+        final_list.append({
             "id": l.id,
             "emp_code": l.emp_code,
             "start": l.start_date.strftime("%Y-%m-%d"),
@@ -101,9 +128,10 @@ def my_approvals():
             "status": l.status,
             "level1_decision_date": l.level1_decision_date,
             "level2_decision_date": l.level2_decision_date,
-        }
-        for l in pending
-    ])
+        })
+
+    return jsonify(final_list)
+
 @employee_lbp.route("/leave/approve/<int:leave_id>", methods=["POST"])
 def approve_leave(leave_id):
     emp = current_employee()
